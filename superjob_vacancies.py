@@ -9,11 +9,15 @@ def get_vacancies(secret_key):
     headers = {
         "X-Api-App-Id": secret_key,
     }
-    response = requests.get(url, headers=headers)
+    params = {
+        "keyword": "программист",
+        "t": 4,
+    }
+    response = requests.get(url, params=params, headers=headers)
     response.raise_for_status
     api_response = response.json()
     for object_ in api_response["objects"]:
-        print(object_["profession"])
+        print(object_["profession"], object_["town"]["title"])
 
 
 def main():
