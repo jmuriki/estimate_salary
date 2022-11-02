@@ -13,10 +13,20 @@ def print_as_table(title, headings, stats):
             value["vacancies_found"],
             value["vacancies_processed"],
             value["average_salary"]
-            ])
+        ])
     ascii_table = AsciiTable(table_data, title)
     print(ascii_table.table)
     print()
+
+
+def calculate_average_salary(salaries, divisor):
+    if not divisor:
+        return 0
+    else:
+        average_salary = int(
+            sum(s for s in salaries) / divisor
+        )
+        return average_salary
 
 
 def predict_salary(salary_from, salary_to):
@@ -52,7 +62,7 @@ def get_vacancies_stats_from_hh(lang, stats):
     url = "https://api.hh.ru/vacancies"
     params = {
         "text": f"программист {lang}",
-        "area": 1
+        "area": 1,
     }
     stats[lang] = {}
     vacancies = []
@@ -75,13 +85,10 @@ def get_vacancies_stats_from_hh(lang, stats):
     ]
     stats[lang]["vacancies_found"] = api_response["found"]
     stats[lang]["vacancies_processed"] = len(rub_salaries)
-    if not stats[lang]["vacancies_processed"]:
-        stats[lang]["average_salary"] = 0 
-    else:
-        stats[lang]["average_salary"] = int(
-            sum(s for s in rub_salaries) /
-            stats[lang]["vacancies_processed"]
-        )
+    stats[lang]["average_salary"] = calculate_average_salary(
+        rub_salaries,
+        stats[lang]["vacancies_processed"],
+    )
     return stats
 
 
@@ -117,20 +124,22 @@ def get_vacancies_stats_from_sj(key, lang, stats):
     ]
     stats[lang]["vacancies_found"] = len(vacancies)
     stats[lang]["vacancies_processed"] = len(rub_salaries)
-    if not stats[lang]["vacancies_processed"]:
-        stats[lang]["average_salary"] = 0 
-    else:
-        stats[lang]["average_salary"] = int(
-            sum(s for s in rub_salaries) /
-            stats[lang]["vacancies_processed"]
-        )
+    stats[lang]["average_salary"] = calculate_average_salary(
+        rub_salaries,
+        stats[lang]["vacancies_processed"],
+    )
     return stats
 
 
 def main():
     load_dotenv()
     secret_key = os.getenv("SECRET_KEY")
-    headings = ["Язык программирования", "Вакансий найдено", "Ваканcий обработано", "Средняя зарплата"]
+    headings = [
+        "Язык программирования",
+        "Вакансий найдено",
+        "Ваканcий обработано",
+        "Средняя зарплата",
+    ]
     languages = [
         "Java Script",
         "Java",
@@ -140,7 +149,7 @@ def main():
         "C++",
         "C#",
         "C",
-        "Go"
+        "Go",
     ]
     hh_stats = {}
     sj_stats = {}
