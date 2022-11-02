@@ -19,7 +19,7 @@ def print_as_table(title, headings, stats):
     print()
 
 
-def calculate_average_salary(salaries, divisor):
+def calc_avg_salary(salaries, divisor):
     if not divisor:
         return 0
     else:
@@ -27,6 +27,17 @@ def calculate_average_salary(salaries, divisor):
             sum(s for s in salaries) / divisor
         )
         return average_salary
+
+
+def organize_stats(stats, lang, vacancies, rub_salaries):
+    stats[lang] = {}
+    stats[lang]["vacancies_found"] = len(vacancies)
+    stats[lang]["vacancies_processed"] = len(rub_salaries)
+    stats[lang]["average_salary"] = calc_avg_salary(
+        rub_salaries,
+        stats[lang]["vacancies_processed"],
+    )
+    return stats
 
 
 def predict_salary(salary_from, salary_to):
@@ -58,13 +69,12 @@ def predict_rub_salary_for_sj(vacancy):
         return vacancy["payment_to"] * 0.8
 
 
-def get_vacancies_stats_from_hh(lang, stats):
+def get_hh_vacancies(lang):
     url = "https://api.hh.ru/vacancies"
     params = {
         "text": f"программист {lang}",
         "area": 1,
     }
-    stats[lang] = {}
     vacancies = []
     page = 0
     pages = 1
@@ -76,28 +86,14 @@ def get_vacancies_stats_from_hh(lang, stats):
         vacancies.extend(api_response["items"])
         page += 1
         pages = api_response["pages"]
-    rub_salaries = [
-        s for s in [
-            predict_rub_salary_for_hh(vacancy)
-            for vacancy in vacancies
-            ]
-        if s is not None
-    ]
-    stats[lang]["vacancies_found"] = api_response["found"]
-    stats[lang]["vacancies_processed"] = len(rub_salaries)
-    stats[lang]["average_salary"] = calculate_average_salary(
-        rub_salaries,
-        stats[lang]["vacancies_processed"],
-    )
-    return stats
+    return vacancies
 
 
-def get_vacancies_stats_from_sj(key, lang, stats):
+def get_sj_vacancies(lang, key):
     url = "https://api.superjob.ru/2.0/vacancies/"
     headers = {
         "X-Api-App-Id": key,
     }
-    stats[lang] = {}
     vacancies = []
     page = 0
     more_pages = True
@@ -115,6 +111,24 @@ def get_vacancies_stats_from_sj(key, lang, stats):
         vacancies.extend(api_response["objects"])
         page += 1
         more_pages = api_response["more"]
+    return vacancies
+
+
+def get_hh_stats(stats, lang):
+    vacancies = get_hh_vacancies(lang)
+    rub_salaries = [
+        s for s in [
+            predict_rub_salary_for_hh(vacancy)
+            for vacancy in vacancies
+            ]
+        if s is not None
+    ]
+    stats = organize_stats(stats, lang, vacancies, rub_salaries)
+    return stats
+
+
+def get_sj_stats(stats, lang, key):
+    vacancies = get_sj_vacancies(lang, key)
     rub_salaries = [
         s for s in [
             predict_rub_salary_for_sj(vacancy)
@@ -122,18 +136,13 @@ def get_vacancies_stats_from_sj(key, lang, stats):
         ]
         if s is not None
     ]
-    stats[lang]["vacancies_found"] = len(vacancies)
-    stats[lang]["vacancies_processed"] = len(rub_salaries)
-    stats[lang]["average_salary"] = calculate_average_salary(
-        rub_salaries,
-        stats[lang]["vacancies_processed"],
-    )
+    stats = organize_stats(stats, lang, vacancies, rub_salaries)
     return stats
 
 
 def main():
     load_dotenv()
-    secret_key = os.getenv("SECRET_KEY")
+    sj_key = os.getenv("SECRET_KEY")
     headings = [
         "Язык программирования",
         "Вакансий найдено",
@@ -150,12 +159,13 @@ def main():
         "C#",
         "C",
         "Go",
+        "1С",
     ]
     hh_stats = {}
     sj_stats = {}
     for language in languages:
-        get_vacancies_stats_from_hh(language, hh_stats)
-        get_vacancies_stats_from_sj(secret_key, language, sj_stats)
+        get_hh_stats(hh_stats, language)
+        get_sj_stats(sj_stats, language, sj_key)
     print_as_table("HeadHunter Moscow", headings, hh_stats)
     print_as_table("SuperJob Moscow", headings, sj_stats)
 
