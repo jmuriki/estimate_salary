@@ -1,8 +1,22 @@
 import os
 import requests
 
-from pprint import pprint
 from dotenv import load_dotenv
+from terminaltables import AsciiTable
+
+
+def print_as_table(title, headings, stats):
+    table_data = [headings]
+    for key, value in stats.items():
+        table_data.append([
+            key,
+            value["vacancies_found"],
+            value["vacancies_processed"],
+            value["average_salary"]
+            ])
+    ascii_table = AsciiTable(table_data, title)
+    print(ascii_table.table)
+    print()
 
 
 def predict_salary(salary_from, salary_to):
@@ -34,14 +48,14 @@ def predict_rub_salary_for_sj(vacancy):
         return vacancy["payment_to"] * 0.8
 
 
-def get_hh_vacancies_stats(language, hh_vacancies_stats):
+def get_vacancies_stats_from_hh(lang, stats):
     url = "https://api.hh.ru/vacancies"
     params = {
-        "text": f"программист {language}",
+        "text": f"программист {lang}",
         "area": 1
     }
+    stats[lang] = {}
     vacancies = []
-    hh_vacancies_stats[language] = {}
     page = 0
     pages = 1
     while page < pages:
@@ -59,40 +73,41 @@ def get_hh_vacancies_stats(language, hh_vacancies_stats):
             ]
         if s is not None
     ]
-    hh_vacancies_stats[language]["vacancies_found"] = api_response["found"]
-    hh_vacancies_stats[language]["vacancies_processed"] = len(rub_salaries)
-    hh_vacancies_stats[language]["average_salary"] = int(
-        sum(s for s in rub_salaries) /
-        hh_vacancies_stats[language]["vacancies_processed"]
-    )
-    return hh_vacancies_stats
+    stats[lang]["vacancies_found"] = api_response["found"]
+    stats[lang]["vacancies_processed"] = len(rub_salaries)
+    if not stats[lang]["vacancies_processed"]:
+        stats[lang]["average_salary"] = 0 
+    else:
+        stats[lang]["average_salary"] = int(
+            sum(s for s in rub_salaries) /
+            stats[lang]["vacancies_processed"]
+        )
+    return stats
 
 
-def get_sj_vacancies_stats(secret_key, language, sj_vacancies_stats):
+def get_vacancies_stats_from_sj(key, lang, stats):
     url = "https://api.superjob.ru/2.0/vacancies/"
     headers = {
-        "X-Api-App-Id": secret_key,
+        "X-Api-App-Id": key,
     }
+    stats[lang] = {}
     vacancies = []
-    sj_vacancies_stats[language] = {}
     page = 0
-    more = True
-    while more:
+    more_pages = True
+    while more_pages:
         params = {
             "town": 4,
             "catalogues": 48,
-            "keyword": language,
+            "keyword": lang,
             "page": page,
             "count": 100,
         }
         response = requests.get(url, params=params, headers=headers)
         response.raise_for_status
         api_response = response.json()
-        more = api_response["more"]
         vacancies.extend(api_response["objects"])
         page += 1
-    sj_vacancies_stats[language]["vacancies_found"] = len(vacancies)
-    vacancies = [v for v in vacancies if language in v["profession"]]
+        more_pages = api_response["more"]
     rub_salaries = [
         s for s in [
             predict_rub_salary_for_sj(vacancy)
@@ -100,20 +115,22 @@ def get_sj_vacancies_stats(secret_key, language, sj_vacancies_stats):
         ]
         if s is not None
     ]
-    sj_vacancies_stats[language]["vacancies_processed"] = len(rub_salaries)
-    if not sj_vacancies_stats[language]["vacancies_processed"]:
-        sj_vacancies_stats[language]["average_salary"] = None 
+    stats[lang]["vacancies_found"] = len(vacancies)
+    stats[lang]["vacancies_processed"] = len(rub_salaries)
+    if not stats[lang]["vacancies_processed"]:
+        stats[lang]["average_salary"] = 0 
     else:
-        sj_vacancies_stats[language]["average_salary"] = int(
+        stats[lang]["average_salary"] = int(
             sum(s for s in rub_salaries) /
-            sj_vacancies_stats[language]["vacancies_processed"]
+            stats[lang]["vacancies_processed"]
         )
-    return sj_vacancies_stats
+    return stats
 
 
 def main():
     load_dotenv()
     secret_key = os.getenv("SECRET_KEY")
+    headings = ["Язык программирования", "Вакансий найдено", "Ваканcий обработано", "Средняя зарплата"]
     languages = [
         "Java Script",
         "Java",
@@ -125,13 +142,13 @@ def main():
         "C",
         "Go"
     ]
-    hh_vacancies_stats = {}
-    sj_vacancies_stats = {}
+    hh_stats = {}
+    sj_stats = {}
     for language in languages:
-        hh_vacancies_stats = get_hh_vacancies_stats(language, hh_vacancies_stats)
-        sj_vacancies_stats = get_sj_vacancies_stats(secret_key, language, sj_vacancies_stats)
-    pprint(hh_vacancies_stats)
-    pprint(sj_vacancies_stats)
+        get_vacancies_stats_from_hh(language, hh_stats)
+        get_vacancies_stats_from_sj(secret_key, language, sj_stats)
+    print_as_table("HeadHunter Moscow", headings, hh_stats)
+    print_as_table("SuperJob Moscow", headings, sj_stats)
 
 
 if __name__ == "__main__":
