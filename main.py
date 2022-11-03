@@ -7,12 +7,12 @@ from terminaltables import AsciiTable
 
 def print_as_table(title, headings, stats):
     table_strings = [headings]
-    for key, value in stats.items():
+    for language, stats_figures in stats.items():
         table_strings.append([
-            key,
-            value["vacancies_found"],
-            value["vacancies_processed"],
-            value["average_salary"]
+            language,
+            stats_figures["vacancies_found"],
+            stats_figures["vacancies_processed"],
+            stats_figures["average_salary"]
         ])
     ascii_table = AsciiTable(table_strings, title)
     print(ascii_table.table)
