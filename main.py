@@ -126,7 +126,7 @@ def get_hh_stats(stats, lang):
             predict_rub_salary_for_hh(vacancy)
             for vacancy in vacancies
             ]
-        if salary is not None
+        if salary
     ]
     stats = organize_stats(stats, lang, vacancies, rub_salaries)
     return stats
@@ -139,7 +139,7 @@ def get_sj_stats(stats, lang, key):
             predict_rub_salary_for_sj(vacancy)
             for vacancy in vacancies
         ]
-        if salary is not None
+        if salary
     ]
     stats = organize_stats(stats, lang, vacancies, rub_salaries)
     return stats
