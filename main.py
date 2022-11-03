@@ -29,15 +29,15 @@ def calc_avg_salary(salaries, divisor):
         return average_salary
 
 
-def organize_stats(stats, lang, vacancies, rub_salaries):
-    stats[lang] = {}
-    stats[lang]["vacancies_found"] = len(vacancies)
-    stats[lang]["vacancies_processed"] = len(rub_salaries)
-    stats[lang]["average_salary"] = calc_avg_salary(
+def get_total_figures(vacancies, rub_salaries):
+    total_figures = {}
+    total_figures["vacancies_found"] = len(vacancies)
+    total_figures["vacancies_processed"] = len(rub_salaries)
+    total_figures["average_salary"] = calc_avg_salary(
         rub_salaries,
-        stats[lang]["vacancies_processed"],
+        total_figures["vacancies_processed"],
     )
-    return stats
+    return total_figures
 
 
 def predict_salary(salary_from, salary_to):
@@ -95,7 +95,6 @@ def get_sj_vacancies(lang, key):
     moscow_code = 4
     it_development_code = 48
     vacancies_per_page = 100
-    devs
     headers = {
         "X-Api-App-Id": key,
     }
@@ -119,7 +118,7 @@ def get_sj_vacancies(lang, key):
     return vacancies
 
 
-def get_hh_stats(stats, lang):
+def get_hh_stats(lang):
     vacancies = get_hh_vacancies(lang)
     rub_salaries = [
         salary for salary in [
@@ -128,11 +127,11 @@ def get_hh_stats(stats, lang):
             ]
         if salary
     ]
-    stats = organize_stats(stats, lang, vacancies, rub_salaries)
-    return stats
+    total_figures = get_total_figures(vacancies, rub_salaries)
+    return total_figures
 
 
-def get_sj_stats(stats, lang, key):
+def get_sj_stats(lang, key):
     vacancies = get_sj_vacancies(lang, key)
     rub_salaries = [
         salary for salary in [
@@ -141,8 +140,8 @@ def get_sj_stats(stats, lang, key):
         ]
         if salary
     ]
-    stats = organize_stats(stats, lang, vacancies, rub_salaries)
-    return stats
+    total_figures = get_total_figures(vacancies, rub_salaries)
+    return total_figures
 
 
 def main():
@@ -169,8 +168,8 @@ def main():
     hh_stats = {}
     sj_stats = {}
     for language in languages:
-        get_hh_stats(hh_stats, language)
-        get_sj_stats(sj_stats, language, sj_key)
+        hh_stats[language] = get_hh_stats(language)
+        sj_stats[language] = get_sj_stats(language, sj_key)
     print_as_table("HeadHunter Moscow", headings, hh_stats)
     print_as_table("SuperJob Moscow", headings, sj_stats)
 
