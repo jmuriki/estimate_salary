@@ -21,8 +21,7 @@ def print_as_table(title, headings, stats):
 
 def calc_avg_salary(real_salaries, divisor):
     if divisor:
-        average_salary = int(sum(real_salaries) / divisor)
-        return average_salary
+        return int(sum(real_salaries) / divisor)
     else:
         return 0
 
@@ -38,33 +37,41 @@ def get_total_figures(vacancies, real_salaries):
     return total_figures
 
 
-def predict_salary(salary_from, salary_to):
-    return (salary_from + salary_to) / 2
+def predict_salary(salary_from, salary_to, offer, currency):
+    if currency not in offer:
+        return None
+    elif salary_from and salary_to:
+        return (salary_from + salary_to) / 2
+    elif salary_from and not salary_to:
+        return salary_from * 1.2
+    elif not salary_from and salary_to:
+        return salary_to * 0.8
 
 
 def predict_rub_salary_for_hh(vacancy):
+    currency_reduction = "RUR"
     salary = vacancy["salary"]
-    if not salary:
+    if salary:
+        rub_salary = predict_salary(
+            salary["from"],
+            salary["to"],
+            salary["currency"],
+            currency_reduction
+        )
+        return rub_salary
+    else:
         return None
-    elif "RUR" not in salary["currency"]:
-        return None
-    elif salary["from"] and salary["to"]:
-        return predict_salary(salary["from"], salary["to"])
-    elif salary["from"] and not salary["to"]:
-        return salary["from"] * 1.2
-    elif not salary["from"] and salary["to"]:
-        return salary["to"] * 0.8
 
 
 def predict_rub_salary_for_sj(vacancy):
-    if "rub" not in vacancy["currency"]:
-        return None
-    elif vacancy["payment_from"] and vacancy["payment_to"]:
-        return predict_salary(vacancy["payment_from"], vacancy["payment_to"])
-    elif vacancy["payment_from"] and not vacancy["payment_to"]:
-        return vacancy["payment_from"] * 1.2
-    elif not vacancy["payment_from"] and vacancy["payment_to"]:
-        return vacancy["payment_to"] * 0.8
+    currency_reduction = "rub"
+    rub_salary = predict_salary(
+        vacancy["payment_from"],
+        vacancy["payment_to"],
+        vacancy["currency"],
+        currency_reduction
+    )
+    return rub_salary
 
 
 def get_hh_vacancies(lang):
