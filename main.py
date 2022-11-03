@@ -19,22 +19,20 @@ def print_as_table(title, headings, stats):
     print()
 
 
-def calc_avg_salary(salaries, divisor):
-    if not divisor:
-        return 0
-    else:
-        average_salary = int(
-            sum(s for s in salaries) / divisor
-        )
+def calc_avg_salary(real_salaries, divisor):
+    if divisor:
+        average_salary = int(sum(real_salaries) / divisor)
         return average_salary
+    else:
+        return 0
 
 
-def get_total_figures(vacancies, rub_salaries):
+def get_total_figures(vacancies, real_salaries):
     total_figures = {}
     total_figures["vacancies_found"] = len(vacancies)
-    total_figures["vacancies_processed"] = len(rub_salaries)
+    total_figures["vacancies_processed"] = len(real_salaries)
     total_figures["average_salary"] = calc_avg_salary(
-        rub_salaries,
+        real_salaries,
         total_figures["vacancies_processed"],
     )
     return total_figures
@@ -121,26 +119,22 @@ def get_sj_vacancies(lang, key):
 def get_hh_stats(lang):
     vacancies = get_hh_vacancies(lang)
     rub_salaries = [
-        salary for salary in [
-            predict_rub_salary_for_hh(vacancy)
-            for vacancy in vacancies
-            ]
-        if salary
+        predict_rub_salary_for_hh(vacancy)
+        for vacancy in vacancies
     ]
-    total_figures = get_total_figures(vacancies, rub_salaries)
+    real_salaries = [salary for salary in rub_salaries if salary]
+    total_figures = get_total_figures(vacancies, real_salaries)
     return total_figures
 
 
 def get_sj_stats(lang, key):
     vacancies = get_sj_vacancies(lang, key)
     rub_salaries = [
-        salary for salary in [
-            predict_rub_salary_for_sj(vacancy)
-            for vacancy in vacancies
-        ]
-        if salary
+        predict_rub_salary_for_sj(vacancy)
+        for vacancy in vacancies
     ]
-    total_figures = get_total_figures(vacancies, rub_salaries)
+    real_salaries = [salary for salary in rub_salaries if salary]
+    total_figures = get_total_figures(vacancies, real_salaries)
     return total_figures
 
 
