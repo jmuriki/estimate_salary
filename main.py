@@ -6,15 +6,15 @@ from terminaltables import AsciiTable
 
 
 def print_as_table(title, headings, stats):
-    table_strings = [headings]
+    table_lines = [headings]
     for language, stats_figures in stats.items():
-        table_strings.append([
+        table_lines.append([
             language,
             stats_figures["vacancies_found"],
             stats_figures["vacancies_processed"],
             stats_figures["average_salary"]
         ])
-    ascii_table = AsciiTable(table_strings, title)
+    ascii_table = AsciiTable(table_lines, title)
     print(ascii_table.table)
     print()
 
