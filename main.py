@@ -122,11 +122,11 @@ def get_sj_vacancies(lang, key):
 def get_hh_stats(stats, lang):
     vacancies = get_hh_vacancies(lang)
     rub_salaries = [
-        s for s in [
+        salary for salary in [
             predict_rub_salary_for_hh(vacancy)
             for vacancy in vacancies
             ]
-        if s is not None
+        if salary is not None
     ]
     stats = organize_stats(stats, lang, vacancies, rub_salaries)
     return stats
@@ -135,11 +135,11 @@ def get_hh_stats(stats, lang):
 def get_sj_stats(stats, lang, key):
     vacancies = get_sj_vacancies(lang, key)
     rub_salaries = [
-        s for s in [
+        salary for salary in [
             predict_rub_salary_for_sj(vacancy)
             for vacancy in vacancies
         ]
-        if s is not None
+        if salary is not None
     ]
     stats = organize_stats(stats, lang, vacancies, rub_salaries)
     return stats
