@@ -142,7 +142,7 @@ def get_sj_stats(stats, lang, key):
 
 def main():
     load_dotenv()
-    sj_key = os.getenv("SECRET_KEY")
+    sj_key = os.getenv("SJ_SECRET_KEY")
     headings = [
         "Язык программирования",
         "Вакансий найдено",
