@@ -71,9 +71,10 @@ def predict_rub_salary_for_sj(vacancy):
 
 def get_hh_vacancies(lang):
     url = "https://api.hh.ru/vacancies"
+    moscow_code = 1
     params = {
         "text": f"программист {lang}",
-        "area": 1,
+        "area": moscow_code,
     }
     vacancies = []
     page = 0
@@ -91,6 +92,10 @@ def get_hh_vacancies(lang):
 
 def get_sj_vacancies(lang, key):
     url = "https://api.superjob.ru/2.0/vacancies/"
+    moscow_code = 4
+    it_development_code = 48
+    vacancies_per_page = 100
+    devs
     headers = {
         "X-Api-App-Id": key,
     }
@@ -99,11 +104,11 @@ def get_sj_vacancies(lang, key):
     more_pages = True
     while more_pages:
         params = {
-            "town": 4,
-            "catalogues": 48,
+            "town": moscow_code,
+            "catalogues": it_development_code,
             "keyword": lang,
             "page": page,
-            "count": 100,
+            "count": vacancies_per_page,
         }
         response = requests.get(url, params=params, headers=headers)
         response.raise_for_status()
