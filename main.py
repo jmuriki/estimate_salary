@@ -81,7 +81,7 @@ def get_hh_vacancies(lang):
     while page < pages:
         params["page"] = page
         response = requests.get(url, params=params)
-        response.raise_for_status
+        response.raise_for_status()
         api_response = response.json()
         vacancies.extend(api_response["items"])
         page += 1
@@ -106,7 +106,7 @@ def get_sj_vacancies(lang, key):
             "count": 100,
         }
         response = requests.get(url, params=params, headers=headers)
-        response.raise_for_status
+        response.raise_for_status()
         api_response = response.json()
         vacancies.extend(api_response["objects"])
         page += 1
