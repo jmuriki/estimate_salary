@@ -59,7 +59,6 @@ def predict_rub_salary_for_hh(vacancy):
         currency_reduction
     )
     return rub_salary
-        
 
 
 def predict_rub_salary_for_sj(vacancy):
