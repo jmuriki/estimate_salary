@@ -20,10 +20,9 @@ def print_as_table(title, headings, stats):
 
 
 def calc_avg_salary(real_salaries, divisor):
-    if divisor:
-        return int(sum(real_salaries) / divisor)
-    else:
+    if not divisor:
         return 0
+    return int(sum(real_salaries) / divisor)
 
 
 def get_total_figures(vacancies, real_salaries):
@@ -51,16 +50,16 @@ def predict_salary(salary_from, salary_to, offer, currency):
 def predict_rub_salary_for_hh(vacancy):
     currency_reduction = "RUR"
     salary = vacancy["salary"]
-    if salary:
-        rub_salary = predict_salary(
-            salary["from"],
-            salary["to"],
-            salary["currency"],
-            currency_reduction
-        )
-        return rub_salary
-    else:
+    if not salary:
         return None
+    rub_salary = predict_salary(
+        salary["from"],
+        salary["to"],
+        salary["currency"],
+        currency_reduction
+    )
+    return rub_salary
+        
 
 
 def predict_rub_salary_for_sj(vacancy):
