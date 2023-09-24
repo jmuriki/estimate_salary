@@ -50,6 +50,7 @@ pip3 install -r requirements.txt
 SECRET_KEY=вместо этого текста вставьте ключ
 ```
 
+
 ## Запуск
 
 
